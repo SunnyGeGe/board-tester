@@ -1,0 +1,6 @@
+Import('env')
+
+libserial_static = env.StaticLibrary('uart_test', ['uart_test.c'])
+libserial_share = env.SharedLibrary('uart_test', ['uart_test.c'])
+Return(['libserial_static','libserial_share'])
+#env.InstallAs(target = 'obj', source = ['libserial_static', 'libserial_share'])

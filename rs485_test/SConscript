@@ -1,0 +1,5 @@
+Import('env')
+
+libled_static = env.StaticLibrary('led_test', ['led_test.c'])
+libled_share = env.SharedLibrary('led_test', ['led_test.c'])
+Return(['libled_static','libled_share'])

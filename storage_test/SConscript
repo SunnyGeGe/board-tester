@@ -1,0 +1,5 @@
+Import('env')
+
+libstorage_static = env.StaticLibrary('storage_test', ['storage_test.c'])
+libstorage_share = env.SharedLibrary('storage_test', ['storage_test.c'])
+Return(['libstorage_static','libstorage_share'])

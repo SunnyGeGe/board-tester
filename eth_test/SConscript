@@ -1,0 +1,6 @@
+Import('env')
+
+libeth_static = env.StaticLibrary('eth_test', ['eth_test.c'])
+libeth_share = env.SharedLibrary('eth_test', ['eth_test.c'])
+#env.InstallAs(target = 'obj', source = ['libserial_static', 'libserial_share'])
+Return(['libeth_static','libeth_share'])
