@@ -340,7 +340,9 @@ int eth_test(const char *eth,
 	 * The destination address is an ip address
 	 * or is a hostname */
 	if(inet_addr(dest_addr) == INADDR_NONE) {
+		printf("=== INADDR_NONE===\r\n");
 		if((host = gethostbyname(dest_addr)) == NULL)	{
+			printf("=== INADDR_HOST===\r\n");
 			perror("gethostbyname");
 			return -1;
 		}

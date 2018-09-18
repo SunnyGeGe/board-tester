@@ -11,6 +11,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <stdio.h>
+
+extern int err_on_wifi;
+
 #ifndef DEBUG
 #include "../common.h"
 #else
@@ -209,7 +212,7 @@ void wifi_restore(const char* tty_dev, int bitrate, int datasize, char par, int 
 {
     int fd=0;
 	int ret=0,i;
-	char buf[50],buf1[10];
+	char buf[255],buf1[10];
 
     char switch_mode[3] = {'a','a','a'};
 	char *p="a";
@@ -256,7 +259,7 @@ void wifi_zver_enable(const char* tty_dev, int bitrate, int datasize, char par, 
 	char cmd_zver[]="AT+FVER\r";
     char cmd_restore[]="AT+RELD\r";
     char cmd_wap[]="AT+WAP=11BGN,123456,auto\r";
-	char cmd_wsssid[]="AT+WSSSID=MYIR_TECH\r";
+	char cmd_wsssid[]="AT+WSSSID=MYIR_ELECTRONICS\r";
 	char cmd_wskey[]="AT+WSKEY=WPA2PSK,AES,myir2016";
 	
     char switch_mode[3] = {'a','a','a'};
@@ -321,7 +324,7 @@ void wifi_zver_enable(const char* tty_dev, int bitrate, int datasize, char par, 
 	printf("%s\n",buf1);
 	sleep(3);
 
-	ret=at_write(fd,"AT+WSSSID=MYIR_TECH\r",20);	
+	ret=at_write(fd,"AT+WSSSID=MYIR_ELECTRONICS\r",27);	
 		if(ret != 20)
             perror("AT+WSSSID");
 		sleep(4);
@@ -421,6 +424,227 @@ void wifi_ap_enable(const char* tty_dev,int bitrate,int datasize,char par,int st
         
         close(fd);
 }
+
+void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int stop)
+{
+	int fd=0;
+	int ret=0,i;
+	char buf[50],buf1[10];
+
+	char *cmd_wsssid ="MYIR_ELECTRONICS";
+	char *ver="+ok=6.01T.34";
+		
+		char switch_mode[3] = {'a','a','a'};
+		char *p="a";
+		char *p2="+";
+
+		fd = open_tty(tty_dev);
+		if(fd<1)
+			perror("open tty");
+		if(set_tty(fd,bitrate,datasize,par,stop)<0)
+			perror("set tty");
+		
+//		ret=at_write(fd,"AT+Z\r",5);	
+//		if(ret!=5)	perror("AT+Z");
+//		printf("Reboot WiFi module, wait 20s\n");
+//		sleep(20);
+		
+		write(fd,p2,1);usleep(200000);
+		write(fd,p2,1);usleep(200000);
+		write(fd,p2,1);sleep(1);
+		write(fd,p,1);
+		
+		sleep(2);
+		read(fd,buf,sizeof(buf));
+		fprintf(stderr, "%s\n",buf);
+		fprintf(stderr, "Restore WiFi module to APSTA mode\n");
+	
+		ret = at_write(fd, "AT+VER\r", 7);
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+VER=%s\n",buf);
+		if(strstr(buf, ver) == NULL){
+			printf("AT+VER  check error\r\n");
+				err_on_wifi = 21;
+		}
+		else
+		{
+			printf("AT+VER check success\r\n");
+				err_on_wifi = 20;
+		}
+		
+	
+		ret = at_write(fd, "AT+FEPHY=on\r", 12);
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+FEPHY=on response[%d]: %s\n",ret, buf);
+		
+		ret = at_write(fd, "AT+FVEW=DISABLE\r", 16);
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+FVEW=DISABLE response[%d]: %s\n",ret, buf);
+	
+		ret = at_write(fd, "AT+FAPSTA=ON\r", 13);
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+FAPSTA=ON response[%d]: %s\n",ret, buf);
+		
+		
+		ret=at_write(fd,"AT+RELD\r",8);
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(20);
+		printf("Restore response[%d]: %s\n",ret, buf);
+	
+		printf("ReEnter CLi-mode\n");
+		write(fd,p2,1);usleep(200000);
+		write(fd,p2,1);usleep(200000);
+		write(fd,p2,1);sleep(1);
+		write(fd,p,1);
+		
+		sleep(2);
+		memset(buf, 0, sizeof(buf));
+		read(fd,buf,sizeof(buf));
+		printf(" %s\n",buf);
+	
+		ret = at_write(fd, "AT+MSLP=ON\r", 11);
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+MSLP=ON response[%d]: %s\n",ret, buf);
+	
+		ret=at_write(fd,"AT+LANN=192.168.3.2,255.255.255.0\r",34);	
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+LANN=192.168.3.2,255.255.255.0 response[%d]: %s\n",ret, buf);
+	
+		ret=at_write(fd,"AT+DHCPDEN=ON\r",14);	
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+DHCPDEN=ON response[%d]: %s\n",ret, buf);
+	
+		ret=at_write(fd,"AT+DHCPGW=192.168.3.1\r",22);	
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+DHCPGW=192.168.3.1 response[%d]: %s\n",ret, buf);
+	
+		ret=at_write(fd,"AT+WAP=11BGN,IMEON-TEST,AUTO\r",29);	
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+WAP=11BGN,IMEON-TEST,AUTO response[%d]: %s\n",ret, buf);
+	
+
+		ret=at_write(fd,"AT+WAKEY=WPAPSK,TKIPAES,BonjourImeon\r",37);	
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+WAKEY=WPAPSK,TKIPAES,BonjourImeon response[%d]: %s\n",ret, buf);
+	
+	
+		ret=at_write(fd,"AT+DOMAIN=IMEON-ENERGY\r",23); 
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+DOMAIN=IMEON-ENERGY response[%d]: %s\n",ret, buf);
+	
+	
+		ret=at_write(fd,"AT+WMODE=STA\r",13);	
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+WMODE=STA response[%d]: %s\n",ret, buf);
+		
+		ret=at_write(fd,"AT+Z\r",5);	
+		if(ret!=5)	perror("AT+Z");
+		printf("Reboot WiFi module, wait 20s\n");
+		sleep(20);
+			
+			printf("ReEnter CLi-mode\n");
+			write(fd,p2,1);usleep(200000);
+			write(fd,p2,1);usleep(200000);
+			write(fd,p2,1);sleep(1);
+			write(fd,p,1);
+			
+			sleep(2);
+			memset(buf, 0, sizeof(buf));
+			read(fd,buf,sizeof(buf));
+			printf(" %s\n",buf);
+			
+		ret=at_write(fd,"AT+WSSSID=MYIR_ELECTRONICS\r",27);	
+		memset(buf, 0, sizeof(buf));
+		sleep(2);
+		ret = read(fd,buf,sizeof(buf));
+		printf("AT+WSSSID=MYIR_ELECTRONICS response[%d]: %s\n",ret, buf);
+	
+		ret=at_write(fd,"AT+WSKEY=WPA2PSK,AES,myir2016\r",30);	
+		memset(buf, 0, sizeof(buf));
+		sleep(2);
+		ret = read(fd,buf,sizeof(buf));
+		printf("AT+WSKEY=WPA2PSK,AES,myir2016 response[%d]: %s\n",ret, buf);
+			
+		ret=at_write(fd,"AT+Z\r",5);	
+		if(ret!=5)	perror("AT+z");
+		printf("Reboot WiFi module, wait 20s\n");
+		sleep(20);
+				
+		printf("ReEnter CLi-mode\n");
+		write(fd,p2,1);usleep(200000);
+		write(fd,p2,1);usleep(200000);
+		write(fd,p2,1);sleep(1);
+		write(fd,p,1);
+				
+		sleep(5);
+		memset(buf, 0, sizeof(buf));
+		read(fd,buf,sizeof(buf));
+		printf(" %s\n",buf);
+	
+	//AT+VER
+	//+ok=6.01T.33
+	//AT+WSLK
+	//+ok=MYIR_ELECTRONICS(30:FC:68:9A:E8:99)
+	//
+	//AT+PING=www.baidu.com
+	//+ok=Success		
+			ret=at_write(fd,"AT+WSLK\r",8); 
+			memset(buf, 0, sizeof(buf));
+			sleep(1);
+			ret = read(fd,buf,sizeof(buf));
+			printf("AT+WSLK response[%d]: %s\n",ret, buf);
+			if(strstr(buf, cmd_wsssid) == NULL){
+				printf("AT+WSLK check error\r\n");
+				err_on_wifi = 22;
+			}
+			else
+			{
+				printf("AT+WSLK check success\r\n");
+				err_on_wifi = 20;
+			}
+			
+			memset(buf, 0, sizeof(buf));
+			ret=at_write(fd,"AT+PING=www.baidu.com\r",22); 
+			sleep(1);
+			ret = read(fd,buf,sizeof(buf));
+			printf("AT+PING response[%d]: %s\n",ret, buf);
+			if(strstr(buf, "Success") == NULL){
+				printf("AT+PING=www.baidu.com check error\r\n");
+			}
+			else
+			{
+				printf("AT+PING=www.baidu.com check success\r\n");
+			}
+			close(fd);
+}
+
+
+
 /*
 int main()
 {

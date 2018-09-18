@@ -6,6 +6,7 @@
 #include "common.h"
 
 int err_on_testing = 0;
+int err_on_wifi;
 time_t end_time;
 const static int err_flash_interval = 100000;
 const static int pass_flash_interval = 1000000;
@@ -48,7 +49,8 @@ static int codes_list[] = { 139, 158 };
 static void wifi_setup_thread(void *arg)
 {
     printf("WiFi setup thread running\n");
-	wifi_zver_enable("/dev/ttyO5",57600,8,'N',1);
+	err_on_wifi = 0;
+	wifi_apsta_enable("/dev/ttyO5",57600,8,'N',1);
 }
 
 static void wifi_restore_thread(void *arg)
@@ -234,14 +236,24 @@ static void do_test(int automatic)
 
                         case 11 : printf("testing wifi...\n");
                         if(pthread_join(wifi_thread, NULL) == 0)
-                            printf("WiFi setup success\n");
-                            if ((ret = eth_test("eth1", "192.168.30.2", "192.168.30.100")) != 0){
-                                    err_on_testing = 1;
+                            printf("WiFi setup success error_on_wifi=%d\n",err_on_wifi);
+							if(err_on_wifi > 20){
+								err_on_testing = 11;
+							}
+							ret = system("udhcpc -i eth1");
+							if(ret = WEXITSTATUS(ret) != 0){
+								 printf("dhcp on eth1 error!\r\n");
+								 err_on_testing = 11;
+							}
+						
+                            if ((ret = eth_test("eth1", "www.baidu.com", "")) != 0){
+                                    err_on_testing = 11;
                             	}
+
 							
 
                         sprintf(result_list[result_idx++],
-                                        "11. %-15s %s", "wifi", ret == 0 ? "ok" : "err");
+                                        "11. %-15s %s", "wifi", err_on_testing  < 11 ? "ok" : "err");
                                 if (!automatic) {
                                         printf("\n%s\n", result_list[result_idx - 1]);
                                         break;
@@ -263,6 +275,7 @@ static void print_result_list(void)
         if (result_idx < 1)
                 return;
 
+        printf("\n\n*************err_on_testing = %d  *************\n",err_on_testing);
         printf("\n\n************* failing list *************\n");
 
         for (idx = 0; idx < result_idx; ++idx)
@@ -315,13 +328,13 @@ int main(int argc, char *argv[])
                 do_test(0);
 		}
         print_result_list();
-		
-		if((ret = pthread_create(&wifi_thread, NULL, (void *)wifi_restore_thread, NULL))!=0){
-			printf("WiFi restore thread failed\n");
-			}
-		if(pthread_join(wifi_thread, NULL) == 0){
-			printf("WiFi restore success\n");
-			}
+//		
+//		if((ret = pthread_create(&wifi_thread, NULL, (void *)wifi_restore_thread, NULL))!=0){
+//			printf("WiFi restore thread failed\n");
+//			}
+//		if(pthread_join(wifi_thread, NULL) == 0){
+//			printf("WiFi restore success\n");
+//			}
 
         return 0;
 }
