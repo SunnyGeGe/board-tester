@@ -432,7 +432,7 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 	char buf[50],buf1[10];
 
 	char *cmd_wsssid ="MYIR_ELECTRONICS";
-	char *ver="+ok=6.01T.34";
+	char *ver="+ok=6.01T.25-C6078-V1.3";
 		
 		char switch_mode[3] = {'a','a','a'};
 		char *p="a";
@@ -461,8 +461,8 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 	
 		ret = at_write(fd, "AT+VER\r", 7);
 		memset(buf, 0, sizeof(buf));
-		ret = read(fd,buf,sizeof(buf));
 		sleep(1);
+		ret = read(fd,buf,sizeof(buf));
 		printf("AT+VER=%s\n",buf);
 		if(strstr(buf, ver) == NULL){
 			printf("AT+VER  check error\r\n");
@@ -474,23 +474,23 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 				err_on_wifi = 20;
 		}
 		
-	
+#if 0	
 		ret = at_write(fd, "AT+FEPHY=on\r", 12);
 		memset(buf, 0, sizeof(buf));
-		ret = read(fd,buf,sizeof(buf));
 		sleep(1);
+		ret = read(fd,buf,sizeof(buf));
 		printf("AT+FEPHY=on response[%d]: %s\n",ret, buf);
 		
 		ret = at_write(fd, "AT+FVEW=DISABLE\r", 16);
 		memset(buf, 0, sizeof(buf));
-		ret = read(fd,buf,sizeof(buf));
 		sleep(1);
+		ret = read(fd,buf,sizeof(buf));
 		printf("AT+FVEW=DISABLE response[%d]: %s\n",ret, buf);
 	
 		ret = at_write(fd, "AT+FAPSTA=ON\r", 13);
 		memset(buf, 0, sizeof(buf));
-		ret = read(fd,buf,sizeof(buf));
 		sleep(1);
+		ret = read(fd,buf,sizeof(buf));
 		printf("AT+FAPSTA=ON response[%d]: %s\n",ret, buf);
 		
 		
@@ -500,7 +500,7 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		sleep(20);
 		printf("Restore response[%d]: %s\n",ret, buf);
 	
-		printf("ReEnter CLi-mode\n");
+		printf("ReEnter CLi-mode 2\n");
 		write(fd,p2,1);usleep(200000);
 		write(fd,p2,1);usleep(200000);
 		write(fd,p2,1);sleep(1);
@@ -516,7 +516,7 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		ret = read(fd,buf,sizeof(buf));
 		sleep(1);
 		printf("AT+MSLP=ON response[%d]: %s\n",ret, buf);
-	
+#endif	
 		ret=at_write(fd,"AT+LANN=192.168.3.2,255.255.255.0\r",34);	
 		memset(buf, 0, sizeof(buf));
 		ret = read(fd,buf,sizeof(buf));
@@ -556,18 +556,18 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		printf("AT+DOMAIN=IMEON-ENERGY response[%d]: %s\n",ret, buf);
 	
 	
-		ret=at_write(fd,"AT+WMODE=STA\r",13);	
+		ret=at_write(fd,"AT+WMODE=AP\r",12);	
 		memset(buf, 0, sizeof(buf));
 		ret = read(fd,buf,sizeof(buf));
 		sleep(1);
-		printf("AT+WMODE=STA response[%d]: %s\n",ret, buf);
+		printf("AT+WMODE=AP response[%d]: %s\n",ret, buf);
 		
 		ret=at_write(fd,"AT+Z\r",5);	
 		if(ret!=5)	perror("AT+Z");
 		printf("Reboot WiFi module, wait 20s\n");
 		sleep(20);
 			
-			printf("ReEnter CLi-mode\n");
+			printf("ReEnter CLi-mode 3\n");
 			write(fd,p2,1);usleep(200000);
 			write(fd,p2,1);usleep(200000);
 			write(fd,p2,1);sleep(1);
@@ -577,6 +577,18 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 			memset(buf, 0, sizeof(buf));
 			read(fd,buf,sizeof(buf));
 			printf(" %s\n",buf);
+	
+		ret = at_write(fd, "AT+MSLP=ON\r", 11);
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+MSLP=ON response[%d]: %s\n",ret, buf);
+	
+		ret=at_write(fd,"AT+WMODE=STA\r",13);	
+		memset(buf, 0, sizeof(buf));
+		ret = read(fd,buf,sizeof(buf));
+		sleep(1);
+		printf("AT+WMODE=STA response[%d]: %s\n",ret, buf);
 			
 		ret=at_write(fd,"AT+WSSSID=MYIR_ELECTRONICS\r",27);	
 		memset(buf, 0, sizeof(buf));
@@ -592,10 +604,12 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 			
 		ret=at_write(fd,"AT+Z\r",5);	
 		if(ret!=5)	perror("AT+z");
+		sleep(1);
+		ret = read(fd,buf,sizeof(buf));
 		printf("Reboot WiFi module, wait 20s\n");
 		sleep(20);
 				
-		printf("ReEnter CLi-mode\n");
+		printf("ReEnter CLi-mode 4\n");
 		write(fd,p2,1);usleep(200000);
 		write(fd,p2,1);usleep(200000);
 		write(fd,p2,1);sleep(1);
@@ -606,13 +620,6 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		read(fd,buf,sizeof(buf));
 		printf(" %s\n",buf);
 	
-	//AT+VER
-	//+ok=6.01T.33
-	//AT+WSLK
-	//+ok=MYIR_ELECTRONICS(30:FC:68:9A:E8:99)
-	//
-	//AT+PING=www.baidu.com
-	//+ok=Success		
 			ret=at_write(fd,"AT+WSLK\r",8); 
 			memset(buf, 0, sizeof(buf));
 			sleep(1);
