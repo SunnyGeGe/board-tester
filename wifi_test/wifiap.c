@@ -182,7 +182,8 @@ static int set_tty(int fd,
 	}
 	
 
-	newtio.c_cc[VTIME] = 0;
+	newtio.c_cc[VTIME] = 100;
+	newtio.c_cc[VMIN] = 1;
 
 
 	tcflush(fd, TCIFLUSH);
@@ -604,8 +605,8 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 			
 		ret=at_write(fd,"AT+Z\r",5);	
 		if(ret!=5)	perror("AT+z");
-		sleep(1);
-		ret = read(fd,buf,sizeof(buf));
+//		sleep(1);
+//		ret = read(fd,buf,sizeof(buf));
 		printf("Reboot WiFi module, wait 20s\n");
 		sleep(20);
 				
@@ -627,12 +628,11 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 			printf("AT+WSLK response[%d]: %s\n",ret, buf);
 			if(strstr(buf, cmd_wsssid) == NULL){
 				printf("AT+WSLK check error\r\n");
-				err_on_wifi = 22;
+//				err_on_wifi += 1 ;
 			}
 			else
 			{
 				printf("AT+WSLK check success\r\n");
-				err_on_wifi = 20;
 			}
 			
 			memset(buf, 0, sizeof(buf));

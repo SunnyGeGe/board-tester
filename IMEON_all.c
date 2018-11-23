@@ -276,6 +276,7 @@ static void print_result_list(void)
                 return;
 
         printf("\n\n*************err_on_testing = %d  *************\n",err_on_testing);
+        printf("\n\n*************err_on_wifi = %d  *************\n",err_on_wifi);
         printf("\n\n************* failing list *************\n");
 
         for (idx = 0; idx < result_idx; ++idx)
