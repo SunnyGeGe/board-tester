@@ -32,6 +32,7 @@ extern  int set_tty(int fd,
                                    int stop);
 
 extern void wifi_ap_enable(const char* tty_dev,int bitrate,int datasize,char par,int stop);
+extern void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int stop);
 extern void wifi_zver_enable(const char* tty_dev,int bitrate,int datasize,char par,int stop);
 extern void wifi_restore(const char* tty_dev,int bitrate,int datasize,char par,int stop);
 

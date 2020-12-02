@@ -4,6 +4,7 @@
 #include <pthread.h>
 
 #include "common.h"
+#define WIFI_ONLY 1
 
 int err_on_testing = 0;
 int err_on_wifi;
@@ -105,6 +106,7 @@ static void do_test(int automatic)
                         scanf("%d",&sel);
                 }
 
+#ifndef WIFI_ONLY
                 switch(sel)
                 {
                         case 1:printf("testing TTL(J29.7 and J29.8)...\n");
@@ -246,7 +248,7 @@ static void do_test(int automatic)
 								 err_on_testing = 11;
 							}
 						
-                            if ((ret = eth_test("eth1", "www.baidu.com", "")) != 0){
+                            if ((ret = eth_test("eth1", "192.168.30.1", "")) != 0){
                                     err_on_testing = 11;
                             	}
 
@@ -262,10 +264,33 @@ static void do_test(int automatic)
 			 if (!automatic)
                                 break;
 
-		}
+		} // end switch(sel)
+#else
+                        printf("testing wifi...\n");
+                        if(pthread_join(wifi_thread, NULL) == 0)
+                            printf("WiFi setup success error_on_wifi=%d\n",err_on_wifi);
+							if(err_on_wifi > 20){
+								err_on_testing = 11;
+							}
+							ret = system("udhcpc -i eth1");
+							if(ret = WEXITSTATUS(ret) != 0){
+								 printf("dhcp on eth1 error!\r\n");
+								 err_on_testing = 11;
+							}
+						
+			    system("ifconfig eth0 down");
+			    system("ifconfig can0 down");
+                            if ((ret = eth_test("eth1", "192.168.30.1", "")) != 0){
+                                    err_on_testing = 11;
+                            	}
+                        	sprintf(result_list[result_idx++],
+                                        "11. %-15s %s", "wifi", err_on_testing  < 11 ? "ok" : "err");
+
+
+#endif
                 if (automatic)
                         return;
-	}
+	} // end while(1)
 }
 
 static void print_result_list(void)
@@ -320,9 +345,13 @@ int main(int argc, char *argv[])
 
         if (automatic)
 	{
+#ifndef WIFI_ONLY
 		do{
 		gpio_relay_test();
 		}while(count--);
+#else
+		sleep(5);
+#endif
                 do_test(1);
 	}
         else{

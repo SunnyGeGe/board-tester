@@ -433,7 +433,7 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 	char buf[50],buf1[10];
 
 	char *cmd_wsssid ="MYIR_ELECTRONICS";
-	char *ver="+ok=6.01T.25-C6078-V1.3";
+	char *ver="+ok=6.01T.25-C6078-V1.3.2_20181212";
 		
 		char switch_mode[3] = {'a','a','a'};
 		char *p="a";
@@ -456,7 +456,7 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		write(fd,p,1);
 		
 		sleep(2);
-		read(fd,buf,sizeof(buf));
+		read(fd,buf,1);
 		fprintf(stderr, "%s\n",buf);
 		fprintf(stderr, "Restore WiFi module to APSTA mode\n");
 	
@@ -464,16 +464,19 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		memset(buf, 0, sizeof(buf));
 		sleep(1);
 		ret = read(fd,buf,sizeof(buf));
-		printf("AT+VER=%s\n",buf);
+//		printf("AT+VER=%s\n",buf);
 		if(strstr(buf, ver) == NULL){
-			printf("AT+VER  check error\r\n");
+			printf("AT+VER  check error.\r\n");
+			printf("Excepted:%s Read:%s\r\n",ver, buf);
 				err_on_wifi = 21;
 		}
 		else
 		{
 			printf("AT+VER check success\r\n");
+			printf("Excepted:%s Read:%s\r\n",ver, buf);
 				err_on_wifi = 20;
 		}
+		usleep(200000);
 		
 #if 0	
 		ret = at_write(fd, "AT+FEPHY=on\r", 12);
