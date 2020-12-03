@@ -248,7 +248,12 @@ static void do_test(int automatic)
 								 err_on_testing = 11;
 							}
 						
+			    system("ifconfig eth0 down");
+			    system("ifconfig can0 down");
                             if ((ret = eth_test("eth1", "192.168.30.1", "")) != 0){
+                                    err_on_testing = 11;
+                            	}
+                            if ((ret = eth_test("eth1", "192.168.3.2", "")) != 0){
                                     err_on_testing = 11;
                             	}
 
@@ -281,6 +286,9 @@ static void do_test(int automatic)
 			    system("ifconfig eth0 down");
 			    system("ifconfig can0 down");
                             if ((ret = eth_test("eth1", "192.168.30.1", "")) != 0){
+                                    err_on_testing = 11;
+                            	}
+                            if ((ret = eth_test("eth1", "192.168.3.2", "")) != 0){
                                     err_on_testing = 11;
                             	}
                         	sprintf(result_list[result_idx++],
