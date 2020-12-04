@@ -23,7 +23,7 @@ typedef enum {DISABLE = 0, ENABLE} RS485_ENABLE_t;
 static int open_tty(const char *tty_dev)
 {
 	int fd;
-	fd = open(tty_dev, O_RDWR);
+	fd = open(tty_dev, O_RDWR|O_NONBLOCK|O_NOCTTY);
 	if(fd < 0)
 		perror("open tty");
 
@@ -430,7 +430,7 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 {
 	int fd=0;
 	int ret=0,i;
-	char buf[50],buf1[10];
+	char buf[128],buf1[10];
 
 	char *cmd_wsssid ="MYIR_ELECTRONICS";
 	char *ver="+ok=6.01T.25-C6078-V1.3.2_20181212";
@@ -464,14 +464,13 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		memset(buf, 0, sizeof(buf));
 		sleep(1);
 		ret = read(fd,buf,sizeof(buf));
-		printf("AT+VER=%s %d\n",buf,sizeof(buf));
+		printf("\r\n");
+		printf("AT+VER=%s,%d\r\n",buf,strlen(buf));
 		if(strstr(buf, ver) == NULL){
-			printf("AT+VER  check error.\r\n");
 				err_on_wifi = 21;
 		}
 		else
 		{
-			printf("AT+VER check success\r\n");
 				err_on_wifi = 20;
 		}
 #if 0	
@@ -625,7 +624,7 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		memset(buf, 0, sizeof(buf));
 		sleep(1);
 		ret = read(fd,buf,sizeof(buf));
-//		printf("AT+FVER=%s\n",buf);
+		printf("AT+FVER=%s\n",buf);
 		if(strstr(buf, "n") == NULL){
 			printf("AT+FVER  check error.\r\n");
 				err_on_wifi = 22;
