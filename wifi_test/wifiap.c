@@ -464,38 +464,16 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		memset(buf, 0, sizeof(buf));
 		sleep(1);
 		ret = read(fd,buf,sizeof(buf));
-//		printf("AT+VER=%s\n",buf);
+		printf("AT+VER=%s %d\n",buf,sizeof(buf));
 		if(strstr(buf, ver) == NULL){
 			printf("AT+VER  check error.\r\n");
-			printf("Excepted:%s Read:%s\r\n",ver, buf);
 				err_on_wifi = 21;
 		}
 		else
 		{
 			printf("AT+VER check success\r\n");
-			printf("Excepted:%s Read:%s\r\n",ver, buf);
 				err_on_wifi = 20;
 		}
-		usleep(200000);
-		
-		ret = at_write(fd, "AT+FVER\r", 8);
-		memset(buf, 0, sizeof(buf));
-		sleep(1);
-		ret = read(fd,buf,sizeof(buf));
-//		printf("AT+VER=%s\n",buf);
-		if(strstr(buf, "n") == NULL){
-			printf("AT+FVER  check error.\r\n");
-			printf("Excepted:%s Read:%s\r\n","n", buf);
-				err_on_wifi = 22;
-		}
-		else
-		{
-			printf("AT+VER check success\r\n");
-			printf("Excepted:%s Read:%s\r\n",ver, buf);
-				err_on_wifi = 20;
-		}
-		usleep(200000);
-		
 #if 0	
 		ret = at_write(fd, "AT+FEPHY=on\r", 12);
 		memset(buf, 0, sizeof(buf));
@@ -642,6 +620,22 @@ void wifi_apsta_enable(const char* tty_dev,int bitrate,int datasize,char par,int
 		read(fd,buf,sizeof(buf));
 		printf(" %s\n",buf);
 	
+#if 1
+		ret = at_write(fd, "AT+FVER\r", 8);
+		memset(buf, 0, sizeof(buf));
+		sleep(1);
+		ret = read(fd,buf,sizeof(buf));
+//		printf("AT+FVER=%s\n",buf);
+		if(strstr(buf, "n") == NULL){
+			printf("AT+FVER  check error.\r\n");
+				err_on_wifi = 22;
+		}
+		else
+		{
+			printf("AT+FVER check success\r\n");
+				err_on_wifi = 20;
+		}
+#endif		
 			ret=at_write(fd,"AT+WSLK\r",8); 
 			memset(buf, 0, sizeof(buf));
 			sleep(1);

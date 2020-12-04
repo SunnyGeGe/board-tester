@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 #include "common.h"
-#define WIFI_ONLY 1
+//#define WIFI_ONLY 1
 
 int err_on_testing = 0;
 int err_on_wifi;
